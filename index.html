@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเช็คชื่อนักเรียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <h1 class="text-2xl font-bold text-indigo-600">📚 ระบบเช็คชื่อนักเรียน</h1>
+                <div class="flex space-x-4">
+                    <button onclick="showSection('teacher')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                        👨‍🏫 ครู
+                    </button>
+                    <button onclick="showSection('student')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        👨‍🎓 นักเรียน
+                    </button>
+                    <button onclick="showSection('report')" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        📊 รายงาน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Teacher Section -->
+    <div id="teacher-section" class="max-w-4xl mx-auto p-6">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">👨‍🏫 จัดการรายชื่อนักเรียน</h2>
+            
+            <!-- Add Student Form -->
+            <div class="bg-blue-50 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-semibold text-blue-800 mb-4">เพิ่มนักเรียนใหม่</h3>
+                <div class="flex gap-4">
+                    <input type="text" id="student-name" placeholder="ชื่อ-นามสกุล" 
+                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="text" id="student-id" placeholder="รหัสนักเรียน" 
+                           class="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <button onclick="addStudent()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        ➕ เพิ่ม
+                    </button>
+                </div>
+            </div>
+
+            <!-- Student List -->
+            <div class="bg-gray-50 rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">รายชื่อนักเรียนทั้งหมด</h3>
+                <div id="student-list" class="space-y-2">
+                    <!-- Students will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Check-in Section -->
+    <div id="student-section" class="max-w-2xl mx-auto p-6 hidden">
+        <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">👨‍🎓 เช็คชื่อเข้าเรียน</h2>
+            <p class="text-gray-600 mb-8">กรุณากรอกชื่อ-นามสกุลของคุณ</p>
+            
+            <div class="mb-6">
+                <input type="text" id="checkin-name" placeholder="ชื่อ-นามสกุล" 
+                       class="w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-center">
+            </div>
+            
+            <button onclick="checkIn()" class="w-full px-8 py-4 bg-green-600 text-white text-xl font-semibold rounded-xl hover:bg-green-700 transition-colors">
+                ✅ เช็คชื่อ
+            </button>
+            
+            <div id="checkin-message" class="mt-6 p-4 rounded-lg hidden"></div>
+        </div>
+    </div>
+
+    <!-- Report Section -->
+    <div id="report-section" class="max-w-6xl mx-auto p-6 hidden">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">📊 รายงานการเข้าเรียน</h2>
+                <div class="flex gap-4">
+                    <input type="date" id="report-date" class="px-4 py-2 border border-gray-300 rounded-lg">
+                    <button onclick="loadReport()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        🔍 ดูรายงาน
+                    </button>
+                </div>
+            </div>
+            
+            <div id="report-content">
+                <!-- Report will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmAFKP-oXpFUBS55pVqYWvIFaZVba0l0I",
+            authDomain: "student-check-in-system-f772e.firebaseapp.com",
+            projectId: "student-check-in-system-f772e",
+            storageBucket: "student-check-in-system-f772e.firebasestorage.app",
+            messagingSenderId: "924147130011",
+            appId: "1:924147130011:web:53308d17bfe18a91c3b03e",
+            measurementId: "G-P2NRQ5C5R8"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Show/Hide Sections
+        function showSection(section) {
+            document.getElementById('teacher-section').classList.add('hidden');
+            document.getElementById('student-section').classList.add('hidden');
+            document.getElementById('report-section').classList.add('hidden');
+            
+            document.getElementById(section + '-section').classList.remove('hidden');
+            
+            if (section === 'teacher') {
+                loadStudents();
+            } else if (section === 'report') {
+                document.getElementById('report-date').value = new Date().toISOString().split('T')[0];
+                loadReport();
+            }
+        }
+
+        // Add Student Function
+        async function addStudent() {
+            const name = document.getElementById('student-name').value.trim();
+            const studentId = document.getElementById('student-id').value.trim();
+            
+            if (!name || !studentId) {
+                alert('กรุณากรอกชื่อและรหัสนักเรียน');
+                return;
+            }
+
+            try {
+                await db.collection('students').doc(studentId).set({
+                    name: name,
+                    studentId: studentId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                document.getElementById('student-name').value = '';
+                document.getElementById('student-id').value = '';
+                loadStudents();
+                alert('เพิ่มนักเรียนเรียบร้อยแล้ว');
+            } catch (error) {
+                console.error('Error adding student:', error);
+                alert('เกิดข้อผิดพลาดในการเพิ่มนักเรียน');
+            }
+        }
+
+        // Load Students
+        async function loadStudents() {
+            try {
+                const snapshot = await db.collection('students').orderBy('name').get();
+                const studentList = document.getElementById('student-list');
+                studentList.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    studentList.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีรายชื่อนักเรียน</p>';
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const student = doc.data();
+                    const studentDiv = document.createElement('div');
+                    studentDiv.className = 'flex justify-between items-center bg-white p-3 rounded-lg border';
+                    studentDiv.innerHTML = `
+                        <div>
+                            <span class="font-medium">${student.name}</span>
+                            <span class="text-gray-500 ml-2">(${student.studentId})</span>
+                        </div>
+                        <button onclick="removeStudent('${doc.id}')" class="text-red-600 hover:text-red-800">
+                            🗑️ ลบ
+                        </button>
+                    `;
+                    studentList.appendChild(studentDiv);
+                });
+            } catch (error) {
+                console.error('Error loading students:', error);
+            }
+        }
+
+        // Remove Student
+        async function removeStudent(studentId) {
+            if (confirm('คุณต้องการลบนักเรียนคนนี้หรือไม่?')) {
+                try {
+                    await db.collection('students').doc(studentId).delete();
+                    loadStudents();
+                    alert('ลบนักเรียนเรียบร้อยแล้ว');
+                } catch (error) {
+                    console.error('Error removing student:', error);
+                    alert('เกิดข้อผิดพลาดในการลบนักเรียน');
+                }
+            }
+        }
+
+        // Check In Function
+        async function checkIn() {
+            const name = document.getElementById('checkin-name').value.trim();
+            const messageDiv = document.getElementById('checkin-message');
+            
+            if (!name) {
+                showMessage('กรุณากรอกชื่อ-นามสกุล', 'error');
+                return;
+            }
+
+            try {
+                // Check if student exists
+                const studentsSnapshot = await db.collection('students')
+                    .where('name', '==', name)
+                    .get();
+                
+                if (studentsSnapshot.empty) {
+                    showMessage('ไม่พบชื่อของคุณในระบบ กรุณาตรวจสอบการสะกดชื่อ', 'error');
+                    return;
+                }
+
+                const student = studentsSnapshot.docs[0].data();
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Check if already checked in today
+                const attendanceSnapshot = await db.collection('attendance')
+                    .where('studentId', '==', student.studentId)
+                    .where('date', '==', today)
+                    .get();
+                
+                if (!attendanceSnapshot.empty) {
+                    showMessage('คุณได้เช็คชื่อแล้ววันนี้', 'warning');
+                    return;
+                }
+
+                // Record attendance
+                await db.collection('attendance').add({
+                    studentId: student.studentId,
+                    studentName: student.name,
+                    date: today,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'present'
+                });
+
+                showMessage(`เช็คชื่อสำเร็จ! ยินดีต้อนรับ ${student.name}`, 'success');
+                document.getElementById('checkin-name').value = '';
+                
+            } catch (error) {
+                console.error('Error checking in:', error);
+                showMessage('เกิดข้อผิดพลาดในการเช็คชื่อ', 'error');
+            }
+        }
+
+        // Show Message Function
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('checkin-message');
+            messageDiv.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
+            
+            if (type === 'success') {
+                messageDiv.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                messageDiv.classList.add('bg-red-100', 'text-red-800');
+            } else if (type === 'warning') {
+                messageDiv.classList.add('bg-yellow-100', 'text-yellow-800');
+            }
+            
+            messageDiv.textContent = message;
+        }
+
+        // Load Report
+        async function loadReport() {
+            const date = document.getElementById('report-date').value;
+            const reportContent = document.getElementById('report-content');
+            
+            if (!date) {
+                reportContent.innerHTML = '<p class="text-gray-500 text-center py-4">กรุณาเลือกวันที่</p>';
+                return;
+            }
+
+            try {
+                // Get all students
+                const studentsSnapshot = await db.collection('students').orderBy('name').get();
+                
+                // Get attendance for selected date
+                const attendanceSnapshot = await db.collection('attendance')
+                    .where('date', '==', date)
+                    .get();
+                
+                const attendanceMap = {};
+                attendanceSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    attendanceMap[data.studentId] = data;
+                });
+
+                let presentCount = 0;
+                let absentCount = 0;
+                let reportHTML = `
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold mb-4">รายงานการเข้าเรียน วันที่ ${new Date(date).toLocaleDateString('th-TH')}</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                `;
+
+                // Present students
+                reportHTML += `
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h4 class="text-lg font-semibold text-green-800 mb-3">✅ มาเรียน</h4>
+                        <div class="space-y-2">
+                `;
+
+                studentsSnapshot.forEach(doc => {
+                    const student = doc.data();
+                    if (attendanceMap[student.studentId]) {
+                        presentCount++;
+                        const attendance = attendanceMap[student.studentId];
+                        const time = attendance.timestamp ? new Date(attendance.timestamp.toDate()).toLocaleTimeString('th-TH') : 'ไม่ระบุเวลา';
+                        reportHTML += `
+                            <div class="bg-white p-2 rounded border-l-4 border-green-500">
+                                <div class="font-medium">${student.name}</div>
+                                <div class="text-sm text-gray-600">เวลา: ${time}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                reportHTML += `</div></div>`;
+
+                // Absent students
+                reportHTML += `
+                    <div class="bg-red-50 rounded-lg p-4">
+                        <h4 class="text-lg font-semibold text-red-800 mb-3">❌ ขาดเรียน</h4>
+                        <div class="space-y-2">
+                `;
+
+                studentsSnapshot.forEach(doc => {
+                    const student = doc.data();
+                    if (!attendanceMap[student.studentId]) {
+                        absentCount++;
+                        reportHTML += `
+                            <div class="bg-white p-2 rounded border-l-4 border-red-500">
+                                <div class="font-medium">${student.name}</div>
+                                <div class="text-sm text-gray-600">รหัส: ${student.studentId}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                reportHTML += `</div></div></div>`;
+
+                // Summary
+                reportHTML += `
+                    <div class="bg-gray-50 rounded-lg p-4 mt-4">
+                        <h4 class="text-lg font-semibold mb-2">📈 สรุป</h4>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div class="bg-blue-100 p-3 rounded">
+                                <div class="text-2xl font-bold text-blue-800">${studentsSnapshot.size}</div>
+                                <div class="text-blue-600">นักเรียนทั้งหมด</div>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded">
+                                <div class="text-2xl font-bold text-green-800">${presentCount}</div>
+                                <div class="text-green-600">มาเรียน</div>
+                            </div>
+                            <div class="bg-red-100 p-3 rounded">
+                                <div class="text-2xl font-bold text-red-800">${absentCount}</div>
+                                <div class="text-red-600">ขาดเรียน</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                reportContent.innerHTML = reportHTML;
+                
+            } catch (error) {
+                console.error('Error loading report:', error);
+                reportContent.innerHTML = '<p class="text-red-500 text-center py-4">เกิดข้อผิดพลาดในการโหลดรายงาน</p>';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('teacher');
+            
+            // Add Enter key support for check-in
+            document.getElementById('checkin-name').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkIn();
+                }
+            });
+            
+            // Add Enter key support for adding students
+            document.getElementById('student-name').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('student-id').focus();
+                }
+            });
+            
+            document.getElementById('student-id').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addStudent();
+                }
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97310bc73066895d',t:'MTc1NTg1MTgyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
