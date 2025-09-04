@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Sarabun', sans-serif; }
@@ -340,6 +341,18 @@
                             <label class="block text-gray-700 font-medium mb-2">วันที่</label>
                             <input type="date" id="reportDate" onchange="loadReportData()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                         </div>
+                    </div>
+
+                    <!-- Export Controls -->
+                    <div class="flex justify-between items-center mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div>
+                            <h3 class="text-lg font-semibold text-green-800 mb-1">📊 ส่งออกข้อมูล</h3>
+                            <p class="text-green-600 text-sm">ดาวน์โหลดรายงานการเข้าเรียนเป็นไฟล์ Excel</p>
+                        </div>
+                        <button id="exportExcelBtn" onclick="exportToExcel()" disabled class="bg-gray-400 text-white px-6 py-3 rounded-lg transition duration-200 cursor-not-allowed flex items-center space-x-2">
+                            <span>📥</span>
+                            <span>ส่งออก Excel</span>
+                        </button>
                     </div>
 
                     <div id="reportData" class="overflow-x-auto">
@@ -1343,6 +1356,9 @@
             });
         }
 
+        // Global variable to store current report data
+        let currentReportData = [];
+
         async function loadReportData() {
             const grade = document.getElementById('reportGradeSelect').value;
             const subject = document.getElementById('reportSubjectSelect').value;
@@ -1350,6 +1366,8 @@
 
             if (!grade && !subject && !date) {
                 document.getElementById('reportTableBody').innerHTML = '';
+                currentReportData = [];
+                updateExportButton();
                 return;
             }
 
@@ -1369,9 +1387,12 @@
                 const snapshot = await query.get();
                 const tbody = document.getElementById('reportTableBody');
                 tbody.innerHTML = '';
+                currentReportData = [];
 
                 snapshot.forEach(doc => {
                     const record = doc.data();
+                    currentReportData.push(record);
+                    
                     const row = document.createElement('tr');
                     
                     const statusText = {
@@ -1391,8 +1412,24 @@
                     tbody.appendChild(row);
                 });
 
+                updateExportButton();
+
             } catch (error) {
                 console.error('Error loading report data:', error);
+                currentReportData = [];
+                updateExportButton();
+            }
+        }
+
+        function updateExportButton() {
+            const exportBtn = document.getElementById('exportExcelBtn');
+            
+            if (currentReportData.length > 0) {
+                exportBtn.disabled = false;
+                exportBtn.className = 'bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center space-x-2';
+            } else {
+                exportBtn.disabled = true;
+                exportBtn.className = 'bg-gray-400 text-white px-6 py-3 rounded-lg transition duration-200 cursor-not-allowed flex items-center space-x-2';
             }
         }
 
@@ -1973,6 +2010,139 @@
             }
         }
 
+        async function exportToExcel() {
+            if (currentReportData.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ไม่มีข้อมูล',
+                    text: 'ไม่มีข้อมูลสำหรับส่งออก กรุณาเลือกเงื่อนไขการค้นหาก่อน',
+                    confirmButtonText: 'ตกลง'
+                });
+                return;
+            }
+
+            try {
+                // Show loading
+                Swal.fire({
+                    title: 'กำลังสร้างไฟล์ Excel...',
+                    text: 'กรุณารอสักครู่',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Get filter values for filename
+                const grade = document.getElementById('reportGradeSelect').value;
+                const subject = document.getElementById('reportSubjectSelect').value;
+                const date = document.getElementById('reportDate').value;
+
+                // Prepare data for Excel
+                const excelData = [];
+                
+                // Add header row
+                excelData.push([
+                    'รหัสนักเรียน',
+                    'ชื่อ-นามสกุล',
+                    'ระดับชั้น',
+                    'รายวิชา',
+                    'ชื่อวิชา',
+                    'วันที่',
+                    'สถานะการเข้าเรียน',
+                    'เวลาที่บันทึก'
+                ]);
+
+                // Sort data by student code
+                const sortedData = [...currentReportData].sort((a, b) => a.studentCode.localeCompare(b.studentCode));
+
+                // Add data rows
+                sortedData.forEach(record => {
+                    const statusText = {
+                        'present': 'มาเรียน',
+                        'absent': 'ขาดเรียน',
+                        'late': 'สาย',
+                        'business': 'ลากิจ',
+                        'sick': 'ลาป่วย'
+                    };
+
+                    // Find subject name
+                    const subjectInfo = subjects.find(s => s.code === record.subject);
+                    const subjectName = subjectInfo ? subjectInfo.name : '';
+
+                    excelData.push([
+                        record.studentCode,
+                        record.studentName,
+                        record.grade,
+                        record.subject,
+                        subjectName,
+                        record.date,
+                        statusText[record.status] || record.status,
+                        new Date(record.timestamp.toDate()).toLocaleString('th-TH')
+                    ]);
+                });
+
+                // Create workbook and worksheet
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+                // Set column widths
+                const colWidths = [
+                    { wch: 15 }, // รหัสนักเรียน
+                    { wch: 25 }, // ชื่อ-นามสกุล
+                    { wch: 12 }, // ระดับชั้น
+                    { wch: 12 }, // รายวิชา
+                    { wch: 30 }, // ชื่อวิชา
+                    { wch: 12 }, // วันที่
+                    { wch: 18 }, // สถานะการเข้าเรียน
+                    { wch: 20 }  // เวลาที่บันทึก
+                ];
+                ws['!cols'] = colWidths;
+
+                // Add worksheet to workbook
+                XLSX.utils.book_append_sheet(wb, ws, 'รายงานการเข้าเรียน');
+
+                // Generate filename
+                let filename = 'รายงานการเข้าเรียน';
+                if (grade) filename += `_${grade}`;
+                if (subject) filename += `_${subject}`;
+                if (date) filename += `_${date}`;
+                filename += `_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+                // Save file
+                XLSX.writeFile(wb, filename);
+
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ส่งออกสำเร็จ!',
+                    html: `
+                        <div class="text-left">
+                            <p class="mb-3">ดาวน์โหลดไฟล์ Excel เรียบร้อยแล้ว</p>
+                            <div class="bg-green-50 p-3 rounded border border-green-200">
+                                <div class="text-sm space-y-1">
+                                    <div><strong>ชื่อไฟล์:</strong> ${filename}</div>
+                                    <div><strong>จำนวนข้อมูล:</strong> ${currentReportData.length} รายการ</div>
+                                    ${grade ? `<div><strong>ระดับชั้น:</strong> ${grade}</div>` : ''}
+                                    ${subject ? `<div><strong>รายวิชา:</strong> ${subject}</div>` : ''}
+                                    ${date ? `<div><strong>วันที่:</strong> ${date}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    confirmButtonText: 'ตกลง'
+                });
+
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถส่งออกไฟล์ Excel ได้ กรุณาลองใหม่อีกครั้ง',
+                    confirmButtonText: 'ตกลง'
+                });
+            }
+        }
+
         // Student Dashboard Functions
         async function loadStudentDetails(studentData) {
             const detailsDiv = document.getElementById('studentDetails');
@@ -2099,5 +2269,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'979530f336224b89',t:'MTc1NjkwMTkyMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9799d6dc2118a1b1',t:'MTc1Njk1MDY2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
