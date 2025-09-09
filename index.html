@@ -55,7 +55,7 @@
                 </div>
                 <div>
                     <label class="block text-gray-700 font-medium mb-2">รหัสผ่าน</label>
-                    <input type="password" id="adminPassword" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="รหัสผ่าน" required>
+                    <input type="password" id="adminPassword" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="ใส่รหัสผ่าน" required>
                 </div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
                     เข้าสู่ระบบ
@@ -224,6 +224,18 @@
                                 <input type="text" id="studentGrade" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" required>
                             </div>
                             <div class="md:col-span-3">
+                                <label class="block text-gray-700 font-medium mb-2">📷 รูปภาพนักเรียน</label>
+                                <div class="flex items-start space-x-4">
+                                    <div class="flex-1">
+                                        <input type="file" id="studentPhoto" accept="image/*" onchange="previewStudentPhoto(this, 'addPhotoPreview')" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                        <p class="text-xs text-gray-500 mt-1">รองรับไฟล์: JPG, PNG, GIF (ขนาดไม่เกิน 5MB)</p>
+                                    </div>
+                                    <div id="addPhotoPreview" class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+                                        <span class="text-gray-400 text-xs text-center">ตัวอย่าง<br>รูปภาพ</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="md:col-span-3">
                                 <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-200 mr-2">
                                     บันทึก
                                 </button>
@@ -251,6 +263,18 @@
                                 <input type="text" id="editStudentGrade" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
                             </div>
                             <div class="md:col-span-3">
+                                <label class="block text-gray-700 font-medium mb-2">📷 รูปภาพนักเรียน</label>
+                                <div class="flex items-start space-x-4">
+                                    <div class="flex-1">
+                                        <input type="file" id="editStudentPhoto" accept="image/*" onchange="previewStudentPhoto(this, 'editPhotoPreview')" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        <p class="text-xs text-gray-500 mt-1">รองรับไฟล์: JPG, PNG, GIF (ขนาดไม่เกิน 5MB) - เว้นว่างไว้หากไม่ต้องการเปลี่ยน</p>
+                                    </div>
+                                    <div id="editPhotoPreview" class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+                                        <span class="text-gray-400 text-xs text-center">รูปภาพ<br>ปัจจุบัน</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="md:col-span-3">
                                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200 mr-2">
                                     อัปเดต
                                 </button>
@@ -266,6 +290,7 @@
                         <table class="min-w-full table-auto">
                             <thead class="bg-gray-50">
                                 <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รูปภาพ</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รหัสนักเรียน</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อนักเรียน</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ระดับชั้น</th>
@@ -868,6 +893,8 @@
             document.getElementById('studentCode').value = '';
             document.getElementById('studentName').value = '';
             document.getElementById('studentGrade').value = '';
+            document.getElementById('studentPhoto').value = '';
+            document.getElementById('addPhotoPreview').innerHTML = '<span class="text-gray-400 text-xs text-center">ตัวอย่าง<br>รูปภาพ</span>';
         }
 
         function showEditStudentForm() {
@@ -879,6 +906,57 @@
             document.getElementById('editStudentCode').value = '';
             document.getElementById('editStudentName').value = '';
             document.getElementById('editStudentGrade').value = '';
+            document.getElementById('editStudentPhoto').value = '';
+            document.getElementById('editPhotoPreview').innerHTML = '<span class="text-gray-400 text-xs text-center">รูปภาพ<br>ปัจจุบัน</span>';
+        }
+
+        // Photo preview function
+        function previewStudentPhoto(input, previewId) {
+            const preview = document.getElementById(previewId);
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Check file size (5MB limit)
+                if (file.size > 5 * 1024 * 1024) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'ไฟล์ใหญ่เกินไป',
+                        text: 'กรุณาเลือกไฟล์ที่มีขนาดไม่เกิน 5MB',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    input.value = '';
+                    return;
+                }
+                
+                // Check file type
+                if (!file.type.startsWith('image/')) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'ไฟล์ไม่ถูกต้อง',
+                        text: 'กรุณาเลือกไฟล์รูปภาพเท่านั้น',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover rounded-lg" alt="ตัวอย่างรูปภาพ">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Convert file to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
         }
 
         async function editStudent(studentCode) {
@@ -889,6 +967,15 @@
                     document.getElementById('editStudentCode').value = student.code;
                     document.getElementById('editStudentName').value = student.name;
                     document.getElementById('editStudentGrade').value = student.grade;
+                    
+                    // Show current photo if exists
+                    const editPhotoPreview = document.getElementById('editPhotoPreview');
+                    if (student.photo) {
+                        editPhotoPreview.innerHTML = `<img src="${student.photo}" class="w-full h-full object-cover rounded-lg" alt="รูปภาพปัจจุบัน">`;
+                    } else {
+                        editPhotoPreview.innerHTML = '<span class="text-gray-400 text-xs text-center">ไม่มี<br>รูปภาพ</span>';
+                    }
+                    
                     showEditStudentForm();
                 }
             } catch (error) {
@@ -907,13 +994,34 @@
             const code = document.getElementById('editStudentCode').value;
             const name = document.getElementById('editStudentName').value;
             const grade = document.getElementById('editStudentGrade').value;
+            const photoFile = document.getElementById('editStudentPhoto').files[0];
 
             try {
-                await db.collection('students').doc(code).update({
+                // Show loading
+                Swal.fire({
+                    title: 'กำลังอัปเดตข้อมูล...',
+                    text: 'กรุณารอสักครู่',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const updateData = {
                     name: name,
                     grade: grade,
                     updatedAt: new Date()
-                });
+                };
+
+                // Handle photo update
+                if (photoFile) {
+                    const photoBase64 = await fileToBase64(photoFile);
+                    updateData.photo = photoBase64;
+                    updateData.photoName = photoFile.name;
+                    updateData.photoSize = photoFile.size;
+                }
+
+                await db.collection('students').doc(code).update(updateData);
 
                 Swal.fire({
                     icon: 'success',
@@ -948,7 +1056,19 @@
 
             filteredStudents.forEach(student => {
                 const row = document.createElement('tr');
+                
+                // Create photo cell
+                let photoCell = '';
+                if (student.photo) {
+                    photoCell = `<img src="${student.photo}" class="w-12 h-12 rounded-full object-cover border-2 border-gray-200" alt="รูป ${student.name}">`;
+                } else {
+                    photoCell = `<div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300">
+                        <span class="text-gray-500 text-xs">👤</span>
+                    </div>`;
+                }
+                
                 row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${photoCell}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.code}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <button onclick="viewStudentReport('${student.code}')" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
@@ -970,14 +1090,35 @@
             const code = document.getElementById('studentCode').value;
             const name = document.getElementById('studentName').value;
             const grade = document.getElementById('studentGrade').value;
+            const photoFile = document.getElementById('studentPhoto').files[0];
 
             try {
-                await db.collection('students').doc(code).set({
+                // Show loading
+                Swal.fire({
+                    title: 'กำลังบันทึกข้อมูล...',
+                    text: 'กรุณารอสักครู่',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const studentData = {
                     code: code,
                     name: name,
                     grade: grade,
                     createdAt: new Date()
-                });
+                };
+
+                // Handle photo upload
+                if (photoFile) {
+                    const photoBase64 = await fileToBase64(photoFile);
+                    studentData.photo = photoBase64;
+                    studentData.photoName = photoFile.name;
+                    studentData.photoSize = photoFile.size;
+                }
+
+                await db.collection('students').doc(code).set(studentData);
 
                 Swal.fire({
                     icon: 'success',
@@ -1460,9 +1601,18 @@
 
         async function loadIndividualStudentReport(student) {
             // Display student info
+            let studentPhotoHtml = '';
+            if (student.photo) {
+                studentPhotoHtml = `<img src="${student.photo}" class="w-20 h-20 rounded-full object-cover border-4 border-blue-200" alt="รูป ${student.name}">`;
+            } else {
+                studentPhotoHtml = `<div class="w-20 h-20 rounded-full bg-blue-200 flex items-center justify-center border-4 border-blue-300">
+                    <span class="text-blue-600 text-2xl">👤</span>
+                </div>`;
+            }
+            
             document.getElementById('individualStudentInfo').innerHTML = `
-                <div class="flex items-center space-x-4">
-                    <div class="text-4xl">👤</div>
+                <div class="flex items-center space-x-6">
+                    ${studentPhotoHtml}
                     <div>
                         <h3 class="text-xl font-bold text-blue-800">${student.name}</h3>
                         <p class="text-blue-600">รหัสนักเรียน: ${student.code}</p>
@@ -2146,7 +2296,26 @@
         // Student Dashboard Functions
         async function loadStudentDetails(studentData) {
             const detailsDiv = document.getElementById('studentDetails');
+            
+            let photoHtml = '';
+            if (studentData.photo) {
+                photoHtml = `
+                    <div class="flex justify-center mb-4">
+                        <img src="${studentData.photo}" class="w-24 h-24 rounded-full object-cover border-4 border-green-200" alt="รูป ${studentData.name}">
+                    </div>
+                `;
+            } else {
+                photoHtml = `
+                    <div class="flex justify-center mb-4">
+                        <div class="w-24 h-24 rounded-full bg-green-200 flex items-center justify-center border-4 border-green-300">
+                            <span class="text-green-600 text-3xl">👤</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
             detailsDiv.innerHTML = `
+                ${photoHtml}
                 <div class="flex justify-between">
                     <span class="font-medium">รหัสนักเรียน:</span>
                     <span>${studentData.code}</span>
@@ -2269,5 +2438,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9799d6dc2118a1b1',t:'MTc1Njk1MDY2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97c7b7f9073850cb',t:'MTc1NzQzMTc0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
