@@ -16,6 +16,62 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .slide-in { animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        
+        /* Rank Frame Styles */
+        .legendary-frame {
+            background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 400% 400%;
+            animation: rainbow 3s ease infinite;
+            border: 4px solid transparent;
+            border-radius: 12px;
+            padding: 4px;
+        }
+        
+        .gold-frame {
+            background: linear-gradient(135deg, #ffd700, #ffed4e, #ffd700);
+            border: 4px solid #b8860b;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        .silver-frame {
+            background: linear-gradient(135deg, #c0c0c0, #e5e5e5, #c0c0c0);
+            border: 4px solid #808080;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(192, 192, 192, 0.5);
+        }
+        
+        .bronze-frame {
+            background: linear-gradient(135deg, #cd7f32, #daa520, #cd7f32);
+            border: 4px solid #8b4513;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
+        }
+        
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .coin-animation {
+            animation: coinFlip 2s ease-in-out;
+        }
+        
+        @keyframes coinFlip {
+            0% { transform: rotateY(0deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.2); }
+            100% { transform: rotateY(360deg) scale(1); }
+        }
+        
+        .badge-glow {
+            animation: badgeGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes badgeGlow {
+            from { text-shadow: 0 0 5px currentColor; }
+            to { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
@@ -45,7 +101,7 @@
             <div class="text-center mb-8">
                 <div class="text-6xl mb-4">👨‍🏫</div>
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">เข้าสู่ระบบครู</h2>
-                <div class="text-sm text-gray-500">ใช้ Admin / 1234 สำหรับทดลอง</div>
+                
             </div>
             
             <form onsubmit="adminLogin(event)" class="space-y-4">
@@ -55,7 +111,7 @@
                 </div>
                 <div>
                     <label class="block text-gray-700 font-medium mb-2">รหัสผ่าน</label>
-                    <input type="password" id="adminPassword" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="ใส่รหัสผ่าน" required>
+                    <input type="password" id="adminPassword" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="รหัสผ่านเข้าสู่ระบบ" required>
                 </div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
                     เข้าสู่ระบบ
@@ -309,6 +365,34 @@
                 <div class="bg-white rounded-lg shadow p-6 fade-in">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">✅ เช็คชื่อนักเรียน</h2>
                     
+                    <!-- Reward System Info -->
+                    <div class="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                        <h3 class="text-lg font-semibold text-yellow-800 mb-3 flex items-center">
+                            <span class="coin-animation mr-2">🪙</span>
+                            ระบบเหรียญรางวัล & Rank
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <h4 class="font-medium text-yellow-700 mb-2">🎯 หลักการให้เหรียญ:</h4>
+                                <ul class="space-y-1 text-gray-700">
+                                    <li>✅ <strong>มาเรียนตรงเวลา</strong> → 🥇 เหรียญทอง (1 เหรียญ)</li>
+                                    <li>⏰ <strong>มาเรียนแต่สาย</strong> → 🥈 เหรียญเงิน (0.25 เหรียญ)</li>
+                                    <li>🎁 <strong>มา 7 ครั้งติดต่อกัน</strong> → โบนัส +3 เหรียญ</li>
+                                    <li>❌ <strong>ขาด/ลา</strong> → ไม่ได้เหรียญ</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-yellow-700 mb-2">🏆 ระดับ Rank:</h4>
+                                <ul class="space-y-1 text-gray-700">
+                                    <li>🏅 <strong>Legendary</strong> → มาตรงเวลา 100%</li>
+                                    <li>🥇 <strong>Gold</strong> → มาตรงเวลา ≥ 95%</li>
+                                    <li>🥈 <strong>Silver</strong> → มาตรงเวลา ≥ 85%</li>
+                                    <li>🥉 <strong>Bronze</strong> → มาตรงเวลา ≥ 75%</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Selection Controls -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div>
@@ -611,6 +695,113 @@
         let subjects = [];
         let students = [];
         let attendanceRecords = [];
+
+        // Reward System Functions
+        function calculateCoins(attendanceRecords) {
+            let totalCoins = 0;
+            let consecutivePresentCount = 0;
+            let bonusCoins = 0;
+
+            // Sort records by date
+            const sortedRecords = [...attendanceRecords].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            sortedRecords.forEach(record => {
+                if (record.status === 'present') {
+                    totalCoins += 1; // เหรียญทอง
+                    consecutivePresentCount++;
+                    
+                    // ตรวจสอบโบนัส 7 ครั้งติดต่อกัน
+                    if (consecutivePresentCount === 7) {
+                        bonusCoins += 3;
+                        consecutivePresentCount = 0; // รีเซ็ตนับใหม่
+                    }
+                } else if (record.status === 'late') {
+                    totalCoins += 0.25; // เหรียญเงิน
+                    consecutivePresentCount = 0; // รีเซ็ตการนับ
+                } else {
+                    // ขาด/ลา ไม่ได้เหรียญ และรีเซ็ตการนับ
+                    consecutivePresentCount = 0;
+                }
+            });
+
+            return {
+                totalCoins: totalCoins + bonusCoins,
+                baseCoins: totalCoins,
+                bonusCoins: bonusCoins,
+                goldCoins: sortedRecords.filter(r => r.status === 'present').length,
+                silverCoins: sortedRecords.filter(r => r.status === 'late').length
+            };
+        }
+
+        function calculateRank(attendanceRecords) {
+            const presentCount = attendanceRecords.filter(r => r.status === 'present').length;
+            const totalRecords = attendanceRecords.length;
+            
+            if (totalRecords === 0) return { rank: 'none', percentage: 0, badge: '', frame: '' };
+            
+            const percentage = (presentCount / totalRecords) * 100;
+            
+            if (percentage === 100) {
+                return {
+                    rank: 'legendary',
+                    percentage: percentage,
+                    badge: '🏅 Perfect Attendance',
+                    frame: 'legendary-frame',
+                    title: 'ตำนาน',
+                    description: 'มาเรียนตรงเวลา 100%'
+                };
+            } else if (percentage >= 95) {
+                return {
+                    rank: 'gold',
+                    percentage: percentage,
+                    badge: '🥇 นักเรียนดีเด่น',
+                    frame: 'gold-frame',
+                    title: 'กรอบทอง',
+                    description: 'มาเรียนตรงเวลา ≥ 95%'
+                };
+            } else if (percentage >= 85) {
+                return {
+                    rank: 'silver',
+                    percentage: percentage,
+                    badge: '🥈 นักเรียนมีวินัย',
+                    frame: 'silver-frame',
+                    title: 'กรอบเงิน',
+                    description: 'มาเรียนตรงเวลา ≥ 85%'
+                };
+            } else if (percentage >= 75) {
+                return {
+                    rank: 'bronze',
+                    percentage: percentage,
+                    badge: '🥉 นักเรียนตั้งใจพอสมควร',
+                    frame: 'bronze-frame',
+                    title: 'กรอบทองแดง',
+                    description: 'มาเรียนตรงเวลา ≥ 75%'
+                };
+            } else {
+                return {
+                    rank: 'none',
+                    percentage: percentage,
+                    badge: '',
+                    frame: '',
+                    title: 'ไม่มีกรอบ',
+                    description: 'มาเรียนตรงเวลา < 75%'
+                };
+            }
+        }
+
+        function getSubjectColor(subjectCode) {
+            const colors = {
+                'MATH': '#3b82f6', // น้ำเงิน
+                'SCI': '#10b981',  // เขียว
+                'ENG': '#f59e0b',  // เหลือง
+                'THAI': '#ef4444', // แดง
+                'SOC': '#8b5cf6',  // ม่วง
+                'PE': '#06b6d4',   // ฟ้า
+                'ART': '#f97316',  // ส้ม
+                'MUS': '#ec4899'   // ชมพู
+            };
+            return colors[subjectCode] || '#6b7280'; // เทาเป็นค่าเริ่มต้น
+        }
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1659,19 +1850,68 @@
                 
                 const attendanceRate = ((presentCount / totalRecords) * 100).toFixed(1);
 
+                // Calculate coins and rank
+                const coinData = calculateCoins(records);
+                const rankData = calculateRank(records);
+
                 document.getElementById('overallSummary').innerHTML = `
-                    <div class="flex justify-between"><span>📊 ทั้งหมด:</span><span class="font-semibold">${totalRecords} ครั้ง</span></div>
-                    <div class="flex justify-between"><span>✅ มาเรียน:</span><span class="font-semibold text-green-600">${presentCount} ครั้ง</span></div>
-                    <div class="flex justify-between"><span>❌ ขาดเรียน:</span><span class="font-semibold text-red-600">${absentCount} ครั้ง</span></div>
-                    <div class="flex justify-between"><span>⏰ สาย:</span><span class="font-semibold text-yellow-600">${lateCount} ครั้ง</span></div>
-                    <div class="flex justify-between"><span>📋 ลากิจ:</span><span class="font-semibold text-blue-600">${businessCount} ครั้ง</span></div>
-                    <div class="flex justify-between"><span>🏥 ลาป่วย:</span><span class="font-semibold text-purple-600">${sickCount} ครั้ง</span></div>
-                    <div class="border-t pt-2 mt-2 space-y-1">
-                        <div class="flex justify-between"><span>🧮 การขาดรวม (ตามกติกา):</span><span class="font-bold text-red-600">${totalAbsences} ครั้ง</span></div>
-                        <div class="text-xs text-gray-600 ml-4">• ขาดเรียน: ${absentCount} ครั้ง</div>
-                        <div class="text-xs text-gray-600 ml-4">• สาย/ลา: ${otherAbsences} ครั้ง = ${calculatedAbsences} ครั้งขาด</div>
-                        <div class="flex justify-between"><span>🎯 สถานะสอบ:</span><span class="font-bold ${examStatusColor}">${examStatus}</span></div>
-                        <div class="flex justify-between"><span>📈 เปอร์เซ็นต์การเข้าเรียน:</span><span class="font-bold text-lg ${attendanceRate >= 80 ? 'text-green-600' : attendanceRate >= 60 ? 'text-yellow-600' : 'text-red-600'}">${attendanceRate}%</span></div>
+                    <div class="mb-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <h4 class="font-bold text-yellow-800 mb-2 flex items-center">
+                            <span class="coin-animation mr-2">🪙</span>
+                            ระบบเหรียญรางวัล
+                        </h4>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>🥇 เหรียญทอง:</span>
+                                <span class="font-semibold text-yellow-600">${coinData.goldCoins}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>🥈 เหรียญเงิน:</span>
+                                <span class="font-semibold text-gray-500">${coinData.silverCoins}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>🎁 โบนัส:</span>
+                                <span class="font-semibold text-purple-600">+${coinData.bonusCoins}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-bold">💰 รวมทั้งหมด:</span>
+                                <span class="font-bold text-lg text-green-600">${coinData.totalCoins.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-600 mt-2">
+                            💡 มาเรียนตรงเวลา = 1 เหรียญ | สาย = 0.25 เหรียญ | มา 7 ครั้งติดต่อกัน = โบนัส +3
+                        </div>
+                    </div>
+                    
+                    ${rankData.frame ? `
+                    <div class="mb-4 p-1 ${rankData.frame}">
+                        <div class="bg-white p-4 rounded-lg">
+                            <h4 class="font-bold mb-2 flex items-center justify-between">
+                                <span>🏆 ${rankData.title}</span>
+                                <span class="badge-glow text-lg">${rankData.badge}</span>
+                            </h4>
+                            <div class="text-sm text-gray-600 mb-2">${rankData.description}</div>
+                            <div class="text-lg font-bold" style="color: ${getSubjectColor('OVERALL')}">
+                                การมาเรียนตรงเวลา: ${rankData.percentage.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="space-y-2">
+                        <div class="flex justify-between"><span>📊 ทั้งหมด:</span><span class="font-semibold">${totalRecords} ครั้ง</span></div>
+                        <div class="flex justify-between"><span>✅ มาเรียน:</span><span class="font-semibold text-green-600">${presentCount} ครั้ง</span></div>
+                        <div class="flex justify-between"><span>❌ ขาดเรียน:</span><span class="font-semibold text-red-600">${absentCount} ครั้ง</span></div>
+                        <div class="flex justify-between"><span>⏰ สาย:</span><span class="font-semibold text-yellow-600">${lateCount} ครั้ง</span></div>
+                        <div class="flex justify-between"><span>📋 ลากิจ:</span><span class="font-semibold text-blue-600">${businessCount} ครั้ง</span></div>
+                        <div class="flex justify-between"><span>🏥 ลาป่วย:</span><span class="font-semibold text-purple-600">${sickCount} ครั้ง</span></div>
+                        <div class="border-t pt-2 mt-2 space-y-1">
+                            <div class="flex justify-between"><span>🧮 การขาดรวม (ตามกติกา):</span><span class="font-bold text-red-600">${totalAbsences} ครั้ง</span></div>
+                            <div class="text-xs text-gray-600 ml-4">• ขาดเรียน: ${absentCount} ครั้ง</div>
+                            <div class="text-xs text-gray-600 ml-4">• สาย/ลา: ${otherAbsences} ครั้ง = ${calculatedAbsences} ครั้งขาด</div>
+                            <div class="flex justify-between"><span>🎯 สถานะสอบ:</span><span class="font-bold ${examStatusColor}">${examStatus}</span></div>
+                            <div class="flex justify-between"><span>📈 เปอร์เซ็นต์การเข้าเรียน:</span><span class="font-bold text-lg ${attendanceRate >= 80 ? 'text-green-600' : attendanceRate >= 60 ? 'text-yellow-600' : 'text-red-600'}">${attendanceRate}%</span></div>
+                        </div>
                     </div>
                 `;
 
@@ -1708,45 +1948,72 @@
                     const subjectInfo = subjects.find(s => s.code === subject);
                     const subjectName = subjectInfo ? subjectInfo.name : subject;
                     
+                    // Calculate coins and rank for this subject
+                    const subjectRecords = records.filter(r => r.subject === subject);
+                    const subjectCoinData = calculateCoins(subjectRecords);
+                    const subjectRankData = calculateRank(subjectRecords);
+                    const subjectColor = getSubjectColor(subject);
+                    
                     subjectHTML += `
-                        <div class="bg-white p-3 rounded border">
-                            <div class="font-medium text-purple-800 mb-1">${subject} - ${subjectName}</div>
-                            <div class="text-sm space-y-1">
-                                <div class="flex justify-between">
-                                    <span>✅ มาเรียน:</span>
-                                    <span class="text-green-600">${data.present}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>❌ ขาดเรียน:</span>
-                                    <span class="text-red-600">${data.absent}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>⏰ สาย:</span>
-                                    <span class="text-yellow-600">${data.late}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>📋 ลากิจ:</span>
-                                    <span class="text-blue-600">${data.business}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>🏥 ลาป่วย:</span>
-                                    <span class="text-purple-600">${data.sick}</span>
-                                </div>
-                                <div class="border-t pt-1 mt-1 space-y-1">
-                                    <div class="flex justify-between">
-                                        <span class="font-medium">🧮 ขาดรวม:</span>
-                                        <span class="font-bold text-red-600">${subjectTotalAbsences} ครั้ง</span>
+                        <div class="bg-white rounded border overflow-hidden">
+                            ${subjectRankData.frame ? `
+                            <div class="p-1 ${subjectRankData.frame}">
+                                <div class="bg-white p-3 rounded">
+                            ` : '<div class="p-3">'}
+                                    <div class="font-medium mb-2" style="color: ${subjectColor}">
+                                        ${subject} - ${subjectName}
+                                        ${subjectRankData.badge ? `<div class="text-xs badge-glow mt-1">${subjectRankData.badge}</div>` : ''}
                                     </div>
-                                    <div class="flex justify-between">
-                                        <span class="font-medium">🎯 สถานะ:</span>
-                                        <span class="font-bold ${subjectExamStatusColor}">${subjectExamStatus}</span>
+                                    
+                                    <!-- Coins Section -->
+                                    <div class="mb-3 p-2 bg-yellow-50 rounded text-xs">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="font-medium">🪙 เหรียญ:</span>
+                                            <span class="font-bold text-green-600">${subjectCoinData.totalCoins.toFixed(2)}</span>
+                                        </div>
+                                        <div class="flex justify-between text-xs text-gray-600">
+                                            <span>🥇${subjectCoinData.goldCoins} 🥈${subjectCoinData.silverCoins}</span>
+                                            <span>🎁+${subjectCoinData.bonusCoins}</span>
+                                        </div>
                                     </div>
-                                    <div class="flex justify-between">
-                                        <span>เปอร์เซ็นต์:</span>
-                                        <span class="font-semibold ${percentage >= 80 ? 'text-green-600' : percentage >= 60 ? 'text-yellow-600' : 'text-red-600'}">${percentage}%</span>
+                                    
+                                    <div class="text-sm space-y-1">
+                                        <div class="flex justify-between">
+                                            <span>✅ มาเรียน:</span>
+                                            <span class="text-green-600">${data.present}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>❌ ขาดเรียน:</span>
+                                            <span class="text-red-600">${data.absent}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>⏰ สาย:</span>
+                                            <span class="text-yellow-600">${data.late}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>📋 ลากิจ:</span>
+                                            <span class="text-blue-600">${data.business}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>🏥 ลาป่วย:</span>
+                                            <span class="text-purple-600">${data.sick}</span>
+                                        </div>
+                                        <div class="border-t pt-1 mt-1 space-y-1">
+                                            <div class="flex justify-between">
+                                                <span class="font-medium">🧮 ขาดรวม:</span>
+                                                <span class="font-bold text-red-600">${subjectTotalAbsences} ครั้ง</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="font-medium">🎯 สถานะ:</span>
+                                                <span class="font-bold ${subjectExamStatusColor}">${subjectExamStatus}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span>🏆 Rank:</span>
+                                                <span class="font-semibold" style="color: ${subjectColor}">${subjectRankData.percentage.toFixed(1)}%</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
+                            ${subjectRankData.frame ? '</div></div>' : '</div>'}
                         </div>
                     `;
                 });
@@ -2390,31 +2657,70 @@
                     const subjectInfo = subjects.find(s => s.code === subject);
                     const subjectName = subjectInfo ? subjectInfo.name : subject;
                     
+                    // Calculate coins and rank for this subject
+                    const subjectRecords = records.filter(r => r.subject === subject);
+                    const subjectCoinData = calculateCoins(subjectRecords);
+                    const subjectRankData = calculateRank(subjectRecords);
+                    const subjectColor = getSubjectColor(subject);
+                    
                     summaryHTML += `
-                        <div class="bg-gray-50 p-4 rounded-lg border-l-4 ${subjectTotalAbsences >= 4 ? 'border-red-500' : 'border-green-500'}">
-                            <h3 class="font-semibold mb-3 flex justify-between items-center">
-                                <span>${subject} - ${subjectName}</span>
-                                <span class="text-sm ${subjectExamStatusColor} font-bold">${subjectExamStatus}</span>
-                            </h3>
-                            <div class="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <span class="text-green-600">✅ มาเรียน: ${data.present}</span><br>
-                                    <span class="text-red-600">❌ ขาดเรียน: ${data.absent}</span><br>
-                                    <span class="text-yellow-600">⏰ สาย: ${data.late}</span>
+                        <div class="rounded-lg overflow-hidden ${subjectRankData.frame ? 'p-1 ' + subjectRankData.frame : ''}">
+                            <div class="bg-gray-50 p-4 rounded-lg border-l-4 ${subjectTotalAbsences >= 4 ? 'border-red-500' : 'border-green-500'}">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h3 class="font-semibold" style="color: ${subjectColor}">
+                                            ${subject} - ${subjectName}
+                                        </h3>
+                                        ${subjectRankData.badge ? `<div class="text-xs badge-glow mt-1">${subjectRankData.badge}</div>` : ''}
+                                    </div>
+                                    <span class="text-sm ${subjectExamStatusColor} font-bold">${subjectExamStatus}</span>
                                 </div>
-                                <div>
-                                    <span class="text-blue-600">📋 ลากิจ: ${data.business}</span><br>
-                                    <span class="text-purple-600">🏥 ลาป่วย: ${data.sick}</span><br>
-                                    <span class="font-medium">📊 เปอร์เซ็นต์: ${percentage}%</span>
+                                
+                                <!-- Coins Display -->
+                                <div class="mb-3 p-3 bg-yellow-100 rounded-lg">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="font-medium text-yellow-800 flex items-center">
+                                            <span class="coin-animation mr-1">🪙</span>
+                                            เหรียญรางวัล
+                                        </span>
+                                        <span class="font-bold text-lg text-green-600">${subjectCoinData.totalCoins.toFixed(2)}</span>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-2 text-xs text-center">
+                                        <div class="bg-yellow-200 rounded p-1">
+                                            <div>🥇 ทอง</div>
+                                            <div class="font-semibold">${subjectCoinData.goldCoins}</div>
+                                        </div>
+                                        <div class="bg-gray-200 rounded p-1">
+                                            <div>🥈 เงิน</div>
+                                            <div class="font-semibold">${subjectCoinData.silverCoins}</div>
+                                        </div>
+                                        <div class="bg-purple-200 rounded p-1">
+                                            <div>🎁 โบนัส</div>
+                                            <div class="font-semibold">+${subjectCoinData.bonusCoins}</div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="mt-3 pt-2 border-t border-gray-300">
-                                <div class="flex justify-between text-sm">
-                                    <span class="font-medium">🧮 การขาดรวม (ตามกติกา):</span>
-                                    <span class="font-bold text-red-600">${subjectTotalAbsences} ครั้ง</span>
+                                
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-green-600">✅ มาเรียน: ${data.present}</span><br>
+                                        <span class="text-red-600">❌ ขาดเรียน: ${data.absent}</span><br>
+                                        <span class="text-yellow-600">⏰ สาย: ${data.late}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-blue-600">📋 ลากิจ: ${data.business}</span><br>
+                                        <span class="text-purple-600">🏥 ลาป่วย: ${data.sick}</span><br>
+                                        <span class="font-medium">🏆 Rank: ${subjectRankData.percentage.toFixed(1)}%</span>
+                                    </div>
                                 </div>
-                                <div class="text-xs text-gray-600 mt-1">
-                                    ขาดเรียน ${data.absent} + สาย/ลา ${subjectOtherAbsences} ครั้ง (=${subjectCalculatedAbsences} ขาด)
+                                <div class="mt-3 pt-2 border-t border-gray-300">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="font-medium">🧮 การขาดรวม (ตามกติกา):</span>
+                                        <span class="font-bold text-red-600">${subjectTotalAbsences} ครั้ง</span>
+                                    </div>
+                                    <div class="text-xs text-gray-600 mt-1">
+                                        ขาดเรียน ${data.absent} + สาย/ลา ${subjectOtherAbsences} ครั้ง (=${subjectCalculatedAbsences} ขาด)
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2438,5 +2744,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97c7b7f9073850cb',t:'MTc1NzQzMTc0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97d5deec161499a6',t:'MTc1NzU4MDEzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
